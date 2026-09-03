@@ -1,4 +1,5 @@
 require("dotenv").config();
+const authRoutes = require("./src/routes/authRoutes");
 const express = require("express");
 const connectDB = require("./src/db");
 const projectRoutes = require("./src/routes/projectRoutes");
@@ -7,6 +8,7 @@ const app = express();
 
 // Middleware to read JSON from requests
 app.use(express.json());
+app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 // Connect to the database

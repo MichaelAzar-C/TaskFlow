@@ -4,9 +4,9 @@
   "description": "Full-stack task management platform — Compu-Vision internship\r TaskFlow — a full-stack project & task management platform built during my Compu-Vision internship.",
   "main": "index.js",
   "scripts": {
-  "dev": "nodemon server.js",
-  "start": "node server.js"
-},
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MichaelAzar-C/TaskFlow.git"
@@ -20,8 +20,10 @@
   },
   "homepage": "https://github.com/MichaelAzar-C/TaskFlow#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.4"
   },
   "devDependencies": {

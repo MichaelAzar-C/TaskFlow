@@ -7,11 +7,12 @@ const {
   updateProject,
   deleteProject,
 } = require("../controllers/projectController");
+const { protect } = require("../middleware/auth");
 
-router.post("/", createProject);        // POST   /api/projects
-router.get("/", getProjects);           // GET    /api/projects
-router.get("/:id", getProjectById);     // GET    /api/projects/:id
-router.put("/:id", updateProject);      // PUT    /api/projects/:id
-router.delete("/:id", deleteProject);   // DELETE /api/projects/:id
+router.post("/", protect, createProject);
+router.get("/", getProjects);
+router.get("/:id", getProjectById);
+router.put("/:id", protect, updateProject);
+router.delete("/:id", protect, deleteProject);
 
 module.exports = router;
