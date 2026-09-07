@@ -10,8 +10,8 @@ const {
 const { protect } = require("../middleware/auth");
 
 router.post("/", protect, createTask);
-router.get("/", getTasks);
-router.get("/:id", getTaskById);
+router.get("/", protect ,  getTasks);
+router.get("/:id",protect ,  getTaskById);
 router.put("/:id", protect, updateTask);
 router.delete("/:id", protect, deleteTask);
 
