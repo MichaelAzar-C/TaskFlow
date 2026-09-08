@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -6,6 +6,14 @@ import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 
 function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div style={{
       width: "220px",
@@ -20,6 +28,12 @@ function Sidebar() {
         <Link to="/" style={{ color: "#fff", textDecoration: "none" }}>Dashboard</Link>
         <Link to="/projects" style={{ color: "#fff", textDecoration: "none" }}>Projects</Link>
         <Link to="/tasks" style={{ color: "#fff", textDecoration: "none" }}>Tasks</Link>
+        <button
+          onClick={handleLogout}
+          style={{ marginTop: 30, padding: 8, cursor: "pointer" }}
+        >
+          Log out
+        </button>
       </nav>
     </div>
   );
