@@ -48,14 +48,35 @@ function Tasks() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length < 3) {
+      setError("Task title must be at least 3 characters");
+      return;
+    }
+
+    if (!editingId && !projectId) {
+      setError("Please select a project");
+      return;
+    }
+
     setSaving(true);
     setError("");
 
     try {
       if (editingId) {
-        await api.put(`/tasks/${editingId}`, { title, description, status });
+        await api.put(`/tasks/${editingId}`, {
+          title: trimmedTitle,
+          description: description.trim(),
+          status,
+        });
       } else {
-        await api.post("/tasks", { title, description, status, project: projectId });
+        await api.post("/tasks", {
+          title: trimmedTitle,
+          description: description.trim(),
+          status,
+          project: projectId,
+        });
       }
       resetForm();
       await loadData();
@@ -72,6 +93,7 @@ function Tasks() {
     setDescription(task.description || "");
     setStatus(task.status);
     setProjectId(task.project?._id || "");
+    setError("");
   };
 
   const handleDelete = async (id) => {

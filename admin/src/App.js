@@ -1,9 +1,15 @@
-import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, NavLink, Outlet, useNavigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
+
+const navStyle = ({ isActive }) => ({
+  color: isActive ? "#4ade80" : "#fff",
+  textDecoration: "none",
+  fontWeight: isActive ? "bold" : "normal",
+});
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -25,9 +31,9 @@ function Sidebar() {
     }}>
       <h2 style={{ marginBottom: "30px" }}>TaskFlow</h2>
       <nav style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        <Link to="/" style={{ color: "#fff", textDecoration: "none" }}>Dashboard</Link>
-        <Link to="/projects" style={{ color: "#fff", textDecoration: "none" }}>Projects</Link>
-        <Link to="/tasks" style={{ color: "#fff", textDecoration: "none" }}>Tasks</Link>
+        <NavLink to="/" end style={navStyle}>Dashboard</NavLink>
+        <NavLink to="/projects" style={navStyle}>Projects</NavLink>
+        <NavLink to="/tasks" style={navStyle}>Tasks</NavLink>
         <button
           onClick={handleLogout}
           style={{ marginTop: 30, padding: 8, cursor: "pointer" }}
@@ -39,12 +45,12 @@ function Sidebar() {
   );
 }
 
-function AdminLayout({ children }) {
+function AdminLayout() {
   return (
     <div style={{ display: "flex" }}>
       <Sidebar />
       <div style={{ marginLeft: "220px", padding: "30px", width: "100%" }}>
-        {children}
+        <Outlet />
       </div>
     </div>
   );
@@ -55,9 +61,12 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
-        <Route path="/projects" element={<ProtectedRoute><AdminLayout><Projects /></AdminLayout></ProtectedRoute>} />
-        <Route path="/tasks" element={<ProtectedRoute><AdminLayout><Tasks /></AdminLayout></ProtectedRoute>} />
+
+        <Route element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/tasks" element={<Tasks />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

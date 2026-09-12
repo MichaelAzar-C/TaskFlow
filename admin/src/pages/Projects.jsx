@@ -37,14 +37,27 @@ function Projects() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const trimmedName = name.trim();
+    if (trimmedName.length < 3) {
+      setError("Project name must be at least 3 characters");
+      return;
+    }
+
     setSaving(true);
     setError("");
 
     try {
       if (editingId) {
-        await api.put(`/projects/${editingId}`, { name, description });
+        await api.put(`/projects/${editingId}`, {
+          name: trimmedName,
+          description: description.trim(),
+        });
       } else {
-        await api.post("/projects", { name, description });
+        await api.post("/projects", {
+          name: trimmedName,
+          description: description.trim(),
+        });
       }
       resetForm();
       await loadProjects();
@@ -59,6 +72,7 @@ function Projects() {
     setEditingId(project._id);
     setName(project.name);
     setDescription(project.description || "");
+    setError("");
   };
 
   const handleDelete = async (id) => {
