@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AuthNav from "@/components/AuthNav";
 import "./globals.css";
 
 export const metadata = {
@@ -22,12 +23,7 @@ function Navbar() {
           <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
             Dashboard
           </Link>
-          <Link
-            href="/login"
-            className="rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-gray-700"
-          >
-            Log in
-          </Link>
+          <AuthNav />
         </div>
       </nav>
     </header>
