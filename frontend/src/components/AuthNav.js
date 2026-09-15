@@ -5,15 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function AuthNav() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
     const check = () => setLoggedIn(!!localStorage.getItem("token"));
 
     check();
-    setReady(true);
 
     window.addEventListener("auth-change", check);
     window.addEventListener("storage", check);
@@ -31,7 +29,7 @@ export default function AuthNav() {
     router.push("/");
   };
 
-  if (!ready) return <span className="inline-block w-20" />;
+  if (loggedIn === null) return <span className="inline-block w-20" />;
 
   if (loggedIn) {
     return (
