@@ -11,6 +11,7 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  // Load data once on mount
   useEffect(() => {
     if (!getToken()) {
       router.replace("/login");
@@ -35,13 +36,32 @@ export default function DashboardPage() {
     load();
   }, [router]);
 
-  if (loading) return <main className="mx-auto max-w-6xl px-6 py-20">Loading...</main>;
-  if (error)
+  // Watch for logout in this tab or any other
+  useEffect(() => {
+    const check = () => {
+      if (!getToken()) router.replace("/login");
+    };
+
+    window.addEventListener("auth-change", check);
+    window.addEventListener("storage", check);
+
+    return () => {
+      window.removeEventListener("auth-change", check);
+      window.removeEventListener("storage", check);
+    };
+  }, [router]);
+
+  if (loading) {
+    return <main className="mx-auto max-w-6xl px-6 py-20">Loading...</main>;
+  }
+
+  if (error) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-20">
         <p className="text-red-600">{error}</p>
       </main>
     );
+  }
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-16">
@@ -67,7 +87,9 @@ export default function DashboardPage() {
                 )}
 
                 {projectTasks.length === 0 ? (
-                  <p className="mt-4 text-sm text-gray-500">No tasks in this project.</p>
+                  <p className="mt-4 text-sm text-gray-500">
+                    No tasks in this project.
+                  </p>
                 ) : (
                   <ul className="mt-4 space-y-2">
                     {projectTasks.map((task) => (

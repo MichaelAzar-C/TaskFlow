@@ -10,13 +10,24 @@ export default function AuthNav() {
   const router = useRouter();
 
   useEffect(() => {
-    setLoggedIn(!!localStorage.getItem("token"));
+    const check = () => setLoggedIn(!!localStorage.getItem("token"));
+
+    check();
     setReady(true);
+
+    window.addEventListener("auth-change", check);
+    window.addEventListener("storage", check);
+
+    return () => {
+      window.removeEventListener("auth-change", check);
+      window.removeEventListener("storage", check);
+    };
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     setLoggedIn(false);
+    window.dispatchEvent(new Event("auth-change"));
     router.push("/");
   };
 

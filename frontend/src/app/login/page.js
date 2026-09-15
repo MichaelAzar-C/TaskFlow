@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getToken } from "@/lib/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -10,6 +10,23 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // If already logged in — here or in another tab — go to the dashboard
+  useEffect(() => {
+    const check = () => {
+      if (getToken()) router.replace("/dashboard");
+    };
+
+    check();
+
+    window.addEventListener("auth-change", check);
+    window.addEventListener("storage", check);
+
+    return () => {
+      window.removeEventListener("auth-change", check);
+      window.removeEventListener("storage", check);
+    };
+  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +38,9 @@ export default function LoginPage() {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
+
       localStorage.setItem("token", data.token);
+      window.dispatchEvent(new Event("auth-change"));
       router.push("/dashboard");
     } catch (err) {
       setError(err.message);
