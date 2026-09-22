@@ -3,7 +3,10 @@ import AuthNav from "@/components/AuthNav";
 import "./globals.css";
 
 export const metadata = {
-  title: "TaskFlow — Project & Task Management",
+  title: {
+    default: "TaskFlow — Project & Task Management",
+    template: "%s — TaskFlow",
+  },
   description:
     "Organise your projects, track your tasks, and keep your team moving. Built during the Compu-Vision internship.",
 };

@@ -19,6 +19,12 @@ export async function apiFetch(path, options = {}) {
 
   const data = await res.json().catch(() => ({}));
 
+  // Token expired or invalid: log out everywhere
+  if (res.status === 401 && token) {
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("auth-change"));
+  }
+
   if (!res.ok) {
     throw new Error(data.message || `Request failed (${res.status})`);
   }
