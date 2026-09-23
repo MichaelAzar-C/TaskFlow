@@ -29,7 +29,10 @@ exports.register = async (req, res) => {
       role: user.role,
       token,
     });
-  } catch (error) {
+    } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "Email already in use" });
+    }
     res.status(400).json({ message: error.message });
   }
 };
@@ -61,5 +64,6 @@ exports.login = async (req, res) => {
 
 // GET CURRENT USER
 exports.getMe = async (req, res) => {
-  res.status(200).json(req.user);
+  const { _id, name, email, role, createdAt } = req.user;
+  res.status(200).json({ _id, name, email, role, createdAt });
 };

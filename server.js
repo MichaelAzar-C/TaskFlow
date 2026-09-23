@@ -6,6 +6,7 @@ const connectDB = require("./src/db");
 const authRoutes = require("./src/routes/authRoutes");
 const projectRoutes = require("./src/routes/projectRoutes");
 const taskRoutes = require("./src/routes/taskRoutes");
+const { authLimiter, apiLimiter } = require("./src/middleware/rateLimiter");
 
 const app = express();
 
@@ -19,9 +20,9 @@ app.get("/", (req, res) => {
 });
 
 // Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/projects", projectRoutes);
-app.use("/api/tasks", taskRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/projects", apiLimiter, projectRoutes);
+app.use("/api/tasks", apiLimiter, taskRoutes);
 
 // Start the server only after the database is connected
 const PORT = process.env.PORT || 5000;

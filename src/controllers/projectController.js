@@ -1,4 +1,5 @@
 const Project = require("../models/Project");
+const Task = require("../models/Task");
 
 // CREATE a project
 exports.createProject = async (req, res) => {
@@ -70,6 +71,7 @@ exports.deleteProject = async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
     }
 
+        await Task.deleteMany({ project: project._id });
     await project.deleteOne();
     res.status(200).json({ message: "Project deleted" });
   } catch (error) {
