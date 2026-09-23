@@ -1,5 +1,9 @@
 const Project = require("../models/Project");
 const Task = require("../models/Task");
+const handleError = require("../utils/handleError");
+
+// Helper: is the logged-in user the owner of this project?
+const isOwner = (project, user) => project.owner.toString() === user._id.toString();
 
 // CREATE a project
 exports.createProject = async (req, res) => {
@@ -7,11 +11,11 @@ exports.createProject = async (req, res) => {
     const project = await Project.create({
       name: req.body.name,
       description: req.body.description,
-      owner: req.user._id,
+      owner: req.user._id, // from the verified token, never from the body
     });
     res.status(201).json(project);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -21,7 +25,7 @@ exports.getProjects = async (req, res) => {
     const projects = await Project.find({ owner: req.user._id });
     res.status(200).json(projects);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -31,13 +35,13 @@ exports.getProjectById = async (req, res) => {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    if (project.owner.toString() !== req.user._id.toString()) {
+    if (!isOwner(project, req.user)) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
     res.status(200).json(project);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -47,7 +51,7 @@ exports.updateProject = async (req, res) => {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    if (project.owner.toString() !== req.user._id.toString()) {
+    if (!isOwner(project, req.user)) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -57,24 +61,25 @@ exports.updateProject = async (req, res) => {
     await project.save();
     res.status(200).json(project);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
-// DELETE a project
+// DELETE a project, together with every task inside it
 exports.deleteProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    if (project.owner.toString() !== req.user._id.toString()) {
+    if (!isOwner(project, req.user)) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-        await Task.deleteMany({ project: project._id });
+    // Tasks first, so a failure part-way never leaves orphaned tasks behind
+    await Task.deleteMany({ project: project._id });
     await project.deleteOne();
     res.status(200).json({ message: "Project deleted" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };

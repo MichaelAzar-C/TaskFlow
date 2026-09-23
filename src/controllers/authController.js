@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const handleError = require("../utils/handleError");
 
 // Helper: create a token
 const signToken = (userId) => {
@@ -8,10 +9,16 @@ const signToken = (userId) => {
   });
 };
 
+// Helper: coerce body fields to plain strings.
+// Stops query-operator injection such as { "email": { "$gt": "" } }.
+const asString = (value) => (typeof value === "string" ? value : "");
+
 // REGISTER
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const name = asString(req.body.name);
+    const email = asString(req.body.email).trim().toLowerCase();
+    const password = asString(req.body.password);
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -29,18 +36,21 @@ exports.register = async (req, res) => {
       role: user.role,
       token,
     });
-    } catch (error) {
-    if (error.code === 11000) {
-      return res.status(409).json({ message: "Email already in use" });
-    }
-    res.status(400).json({ message: error.message });
+  } catch (error) {
+    // Also covers the duplicate-email race via the unique index (409)
+    handleError(res, error);
   }
 };
 
 // LOGIN
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = asString(req.body.email).trim().toLowerCase();
+    const password = asString(req.body.password);
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
     // Find user and explicitly include password
     const user = await User.findOne({ email }).select("+password");
@@ -58,7 +68,7 @@ exports.login = async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 

@@ -1,5 +1,7 @@
+const mongoose = require("mongoose");
 const Task = require("../models/Task");
 const Project = require("../models/Project");
+const handleError = require("../utils/handleError");
 
 // Helper: does this user own the project the task belongs to?
 const ownsProject = async (projectId, userId) => {
@@ -13,6 +15,14 @@ exports.createTask = async (req, res) => {
   try {
     const { title, description, status, project, assignee } = req.body;
 
+    if (!project) {
+      return res.status(400).json({ message: "Project is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(project)) {
+      return res.status(400).json({ message: "Invalid project" });
+    }
+
     if (!(await ownsProject(project, req.user._id))) {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -20,7 +30,7 @@ exports.createTask = async (req, res) => {
     const task = await Task.create({ title, description, status, project, assignee });
     res.status(201).json(task);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -36,7 +46,7 @@ exports.getTasks = async (req, res) => {
 
     res.status(200).json(tasks);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -55,7 +65,7 @@ exports.getTaskById = async (req, res) => {
 
     res.status(200).json(task);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -77,7 +87,7 @@ exports.updateTask = async (req, res) => {
     await task.save();
     res.status(200).json(task);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -94,6 +104,6 @@ exports.deleteTask = async (req, res) => {
     await task.deleteOne();
     res.status(200).json({ message: "Task deleted" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };

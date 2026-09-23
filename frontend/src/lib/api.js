@@ -8,14 +8,20 @@ export function getToken() {
 export async function apiFetch(path, options = {}) {
   const token = getToken();
 
-  const res = await fetch(`${BASE}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+  let res;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    // fetch only throws when no response arrived at all: server down, offline, CORS block
+    throw new Error("Cannot reach the server. Please try again in a moment.");
+  }
 
   const data = await res.json().catch(() => ({}));
 

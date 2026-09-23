@@ -1,8 +1,8 @@
 {
   "name": "taskflow",
   "version": "1.0.0",
-  "description": "Full-stack task management platform — Compu-Vision internship\r TaskFlow — a full-stack project & task management platform built during my Compu-Vision internship.",
-  "main": "index.js",
+  "description": "TaskFlow — a full-stack project & task management platform built during the Compu-Vision Full-Stack Web Development Internship.",
+  "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js"
@@ -12,7 +12,7 @@
     "url": "git+https://github.com/MichaelAzar-C/TaskFlow.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Michael Azar",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
