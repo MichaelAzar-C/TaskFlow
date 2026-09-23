@@ -1,25 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch, getToken } from "@/lib/api";
-import Link from "next/link";
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // If already logged in — here or in another tab — go to the dashboard
+  // Already logged in? Go straight to the dashboard
   useEffect(() => {
     const check = () => {
       if (getToken()) router.replace("/dashboard");
     };
 
     check();
-
     window.addEventListener("auth-change", check);
     window.addEventListener("storage", check);
 
@@ -32,12 +32,24 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2) {
+      setError("Please enter your name");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const data = await apiFetch("/auth/login", {
+      const data = await apiFetch("/auth/register", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name: trimmedName, email, password }),
       });
 
       localStorage.setItem("token", data.token);
@@ -52,14 +64,23 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto max-w-sm px-6 py-20">
-      <h1 className="text-2xl font-bold">Log in</h1>
-            <p className="mt-2 text-sm text-gray-600">
-        No account yet?{" "}
-        <Link href="/register" className="underline">
-          Create one
+      <h1 className="text-2xl font-bold">Create your account</h1>
+      <p className="mt-2 text-sm text-gray-600">
+        Already have one?{" "}
+        <Link href="/login" className="underline">
+          Log in
         </Link>
       </p>
+
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="w-full rounded-md border border-gray-300 px-4 py-2"
+        />
         <input
           type="email"
           placeholder="Email"
@@ -70,7 +91,7 @@ export default function LoginPage() {
         />
         <input
           type="password"
-          placeholder="Password"
+          placeholder="Password (8+ characters)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -84,9 +105,9 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
         >
-          {loading ? "Logging in..." : "Log in"}
+          {loading ? "Creating account..." : "Create account"}
         </button>
       </form>
     </main>
   );
-}   
+}

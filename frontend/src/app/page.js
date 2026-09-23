@@ -67,13 +67,13 @@ export default function Home() {
       <section className="mx-auto max-w-6xl px-6 py-20 text-center">
         <h2 className="text-3xl font-bold">Ready to get organised?</h2>
         <p className="mt-4 text-gray-600">
-          Sign in to see your projects and tasks.
+          Create an account to start organising your work.
         </p>
-        <Link
-          href="/login"
+                <Link
+          href="/register"
           className="mt-8 inline-block rounded-md bg-gray-900 px-8 py-3 text-white hover:bg-gray-700"
         >
-          Log in
+          Create your account
         </Link>
       </section>
     </main>
