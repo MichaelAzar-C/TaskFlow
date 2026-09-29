@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const connectDB = require("./src/db");
 
 const authRoutes = require("./src/routes/authRoutes");
@@ -16,6 +17,10 @@ const app = express();
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
+
+// Security headers: hides "X-Powered-By: Express", stops MIME sniffing,
+// blocks the API from being framed, enforces HTTPS on repeat visits, and more.
+app.use(helmet());
 
 // CORS: only the front ends listed in CLIENT_URLS may call the API from a browser.
 // Tools with no Origin header (Postman, curl) are unaffected.

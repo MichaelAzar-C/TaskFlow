@@ -36,6 +36,7 @@ inside them. Every record is scoped to its owner — you can only ever see and t
 - [Security hardening](#security-hardening)
 - [Project structure](#project-structure)
 - [Getting started](#getting-started)
+- [Deployment](#deployment)
 - [Environment variables](#environment-variables)
 - [API reference](#api-reference)
 - [Development log](#development-log)
@@ -87,6 +88,7 @@ inside them. Every record is scoped to its owner — you can only ever see and t
 | Auth | jsonwebtoken + bcryptjs |
 | Config | dotenv |
 | Cross-origin | cors (allowlist) |
+| Security headers | helmet |
 | Rate limiting | express-rate-limit |
 | Admin frontend | React 19 (Create React App) |
 | Admin routing | React Router 7 |
@@ -294,6 +296,8 @@ with `.select("+password")`.
 | Leaking internals in errors | `utils/handleError.js` turns validation errors into clear `400`s and hides unexpected errors behind a generic `500` |
 | Oversized or malformed bodies | JSON bodies capped at 10 kB (`413`); malformed JSON returns a clean `400` |
 | Cross-origin abuse | CORS allowlist from `CLIENT_URLS` instead of allowing every origin |
+| Missing security headers | `helmet` sets `X-Content-Type-Options`, `Strict-Transport-Security`, `X-Frame-Options` and more, and removes `X-Powered-By` |
+| Long-lived stolen tokens | Tokens expire after one day; both front ends log the user out cleanly on a `401` |
 | Duplicate-email race | The `unique` index is the real guarantee; its error is mapped to the same `409` as the pre-check |
 | Deleted users with live tokens | `protect` re-loads the user from the database on every request |
 
@@ -416,6 +420,46 @@ select the **TaskFlow Local** environment, and run **Login** first — it stores
 automatically. The collection includes negative cases (`401` without a token, `403` for a project
 you don't own, ignored owner spoofing).
 
+### Production builds
+
+Both front ends are checked with their production builds before deploying:
+
+```bash
+cd frontend && npm run build          # Next.js
+cd admin && CI=true npm run build     # CRA — CI=true turns lint warnings into errors, as hosts do
+```
+
+---
+
+## Deployment
+
+| Piece | Host | Root directory | Build command | Start / output |
+| --- | --- | --- | --- | --- |
+| API | Render (web service) | *(repo root)* | `npm install` | `npm start` |
+| Public site | Vercel | `frontend` | `npm run build` | Next.js (auto-detected) |
+| Admin dashboard | Vercel | `admin` | `npm run build` | `build` |
+| Database | MongoDB Atlas | — | — | — |
+
+**Environment variables per host**
+
+| Host | Variable | Value |
+| --- | --- | --- |
+| Render (API) | `NODE_ENV` | `production` |
+| | `MONGO_URI` | Atlas connection string |
+| | `JWT_SECRET` | a **new** long random string, not the development one |
+| | `JWT_EXPIRES_IN` | `1d` |
+| | `CLIENT_URLS` | both Vercel URLs, comma-separated |
+| Vercel (public site) | `NEXT_PUBLIC_API_URL` | `https://<api>.onrender.com/api` |
+| | `NEXT_PUBLIC_SITE_URL` | the site's own Vercel URL |
+| Vercel (admin) | `REACT_APP_API_URL` | `https://<api>.onrender.com/api` |
+
+Deploy order: **API first**, then both front ends pointing at it, then update `CLIENT_URLS` on the
+API with the front-end URLs. `admin/vercel.json` rewrites every path to `index.html` so refreshing
+a page like `/projects` doesn't 404 on the static host.
+
+> Render's free tier sleeps after inactivity: the first request after a quiet period can take
+> 30–60 seconds while the API wakes up.
+
 ---
 
 ## Environment variables
@@ -427,7 +471,7 @@ you don't own, ignored owner spoofing).
 | `PORT` | Port the API listens on | `5000` |
 | `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017/taskflow` |
 | `JWT_SECRET` | Secret used to sign and verify tokens | *a long random string* |
-| `JWT_EXPIRES_IN` | Token lifetime | `7d` |
+| `JWT_EXPIRES_IN` | Token lifetime | `1d` |
 | `NODE_ENV` | `production` makes the API trust its host's proxy for client IPs | `development` |
 | `CLIENT_URLS` | Comma-separated front-end origins allowed by CORS | `http://localhost:3000,http://localhost:3001` |
 
@@ -565,6 +609,7 @@ gitGraph
 | --- | --- |
 | **Day 1** | Public registration page, then a full end-to-end run: sign up on the public site, create data in the admin dashboard, see it appear on the public site. |
 | **Day 2** | Bug hunt and hardening: server-side password rules, rate limiting, ID validation, cascade delete, required relationships, centralised error handling, CORS allowlist, body size limit, operator-injection guard, and auto-logout on expired tokens in both front ends. |
+| **Day 3** | Production readiness: security headers with `helmet`, one-day token lifetime, verified both production builds (admin under `CI=true`), a deployment checklist, and an SPA fallback for the admin's static host. Scanned the git history to confirm no secret was ever committed. |
 
 ---
 
